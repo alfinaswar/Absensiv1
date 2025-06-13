@@ -88,6 +88,15 @@ Route::group(['middleware' => ['auth']], function () {
         Route::PUT('/update/{id}', [JabatanController::class, 'update'])->name('jabatan.update');
         Route::delete('/hapus/{id}', [JabatanController::class, 'destroy'])->name('jabatan.destroy');
     });
+    Route::prefix('ketidakhadiran')->group(function () {
+        Route::GET('/', [JabatanController::class, 'index'])->name('jabatan.index');
+        Route::GET('/create', [JabatanController::class, 'create'])->name('jabatan.create');
+        Route::post('/simpan', [JabatanController::class, 'store'])->name('jabatan.store');
+        Route::POST('/simpan-cuti', [JabatanController::class, 'Cutistore'])->name('jabatan.Cutistore');
+        Route::GET('/edit/{id}', [JabatanController::class, 'edit'])->name('jabatan.edit');
+        Route::PUT('/update/{id}', [JabatanController::class, 'update'])->name('jabatan.update');
+        Route::delete('/hapus/{id}', [JabatanController::class, 'destroy'])->name('jabatan.destroy');
+    });
     Route::prefix('users')->group(function () {
         Route::GET('/edit-profile/{id}', [UserController::class, 'UpdateProfile'])->name('users.update-profile');
         Route::PUT('/update-profile/{id}', [UserController::class, 'update'])->name('users.simpan-profile');

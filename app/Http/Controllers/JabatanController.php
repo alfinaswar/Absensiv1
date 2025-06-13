@@ -33,7 +33,11 @@ class JabatanController extends Controller
      */
     public function create()
     {
-        //
+        return view('master-jabat+
+
+
+
+        an.create');
     }
 
     /**
