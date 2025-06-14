@@ -116,16 +116,21 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <strong>Jabatan:</strong>
-                                        <input type="text" name="jabatan" placeholder="Jabatan" class="form-control">
+                                        <select class="form-control" name="jabatan">
+                                            <option>Pilih Jabatan</option>
+                                            @foreach ($jabatan as $j)
+                                                <option value="{{$j->id}}">{{$j->Jabatan}}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                                {{-- <div class="col-md-6">
                                     <div class="form-group">
                                         <strong>Bagian / Departemen:</strong>
                                         <input type="text" name="departemen" placeholder="Bagian / Departemen"
                                             class="form-control">
                                     </div>
-                                </div>
+                                </div> --}}
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <strong>Status Karyawan:</strong>

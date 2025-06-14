@@ -367,8 +367,8 @@
                     name: 'email'
                 },
                 {
-                    data: 'jabatan',
-                    name: 'jabatan'
+                    data: 'get_jabatan.Jabatan',
+                    name: 'get_jabatan.Jabatan'
                 },
                 {
                     data: 'divisi',

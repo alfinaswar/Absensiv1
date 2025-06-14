@@ -6,6 +6,7 @@ use App\Http\Controllers\DependantDropdownController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JabatanController;
 use App\Http\Controllers\JenisCutiController;
+use App\Http\Controllers\KetidakhadiranController;
 use App\Http\Controllers\MasterPerusahaanController;
 use App\Http\Controllers\MasterStatusPegawaiController;
 use App\Http\Controllers\ProductController;
@@ -89,13 +90,13 @@ Route::group(['middleware' => ['auth']], function () {
         Route::delete('/hapus/{id}', [JabatanController::class, 'destroy'])->name('jabatan.destroy');
     });
     Route::prefix('ketidakhadiran')->group(function () {
-        Route::GET('/', [JabatanController::class, 'index'])->name('jabatan.index');
-        Route::GET('/create', [JabatanController::class, 'create'])->name('jabatan.create');
-        Route::post('/simpan', [JabatanController::class, 'store'])->name('jabatan.store');
-        Route::POST('/simpan-cuti', [JabatanController::class, 'Cutistore'])->name('jabatan.Cutistore');
-        Route::GET('/edit/{id}', [JabatanController::class, 'edit'])->name('jabatan.edit');
-        Route::PUT('/update/{id}', [JabatanController::class, 'update'])->name('jabatan.update');
-        Route::delete('/hapus/{id}', [JabatanController::class, 'destroy'])->name('jabatan.destroy');
+        Route::GET('/', [KetidakhadiranController::class, 'index'])->name('ketidakhadiran.index');
+        Route::GET('/create', [KetidakhadiranController::class, 'create'])->name('ketidakhadiran.create');
+        Route::post('/simpan', [KetidakhadiranController::class, 'store'])->name('ketidakhadiran.store');
+        Route::POST('/simpan-cuti', [KetidakhadiranController::class, 'Cutistore'])->name('ketidakhadiran.Cutistore');
+        Route::GET('/edit/{id}', [KetidakhadiranController::class, 'edit'])->name('ketidakhadiran.edit');
+        Route::PUT('/update/{id}', [KetidakhadiranController::class, 'update'])->name('ketidakhadiran.update');
+        Route::delete('/hapus/{id}', [KetidakhadiranController::class, 'destroy'])->name('ketidakhadiran.destroy');
     });
     Route::prefix('users')->group(function () {
         Route::GET('/edit-profile/{id}', [UserController::class, 'UpdateProfile'])->name('users.update-profile');

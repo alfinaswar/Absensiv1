@@ -33,11 +33,7 @@ class JabatanController extends Controller
      */
     public function create()
     {
-        return view('master-jabat+
-
-
-
-        an.create');
+        return view('master-jabatan.create');
     }
 
     /**
@@ -45,7 +41,8 @@ class JabatanController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        Jabatan::create($request->all());
+        return redirect()->route('jabatan.index')->with('success', 'Data Berhasil Di Input');
     }
 
     /**
@@ -59,24 +56,37 @@ class JabatanController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Jabatan $jabatan)
+    public function edit($id)
     {
-        //
+        $data = Jabatan::find($id);
+        return view('master-jabatan.edit', compact('data'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Jabatan $jabatan)
+    public function update(Request $request, $id)
     {
-        //
+        $data = Jabatan::find($id);
+        if (!$data) {
+            return redirect()->route('jabatan.index')->with('error', 'Data Jabatan tidak ditemukan');
+        }
+        $data->update($request->all());
+        return redirect()->route('jabatan.index')->with('success', 'Data Berhasil Di Update');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Jabatan $jabatan)
+    public function destroy($id)
     {
-        //
+        // dd($id);
+        $Jabatan = Jabatan::find($id);
+        if ($Jabatan) {
+            $Jabatan->delete();
+            return response()->json(['message' => 'Jabatan berhasil dihapus'], 200);
+        } else {
+            return response()->json(['message' => 'Jabatan tidak ditemukan'], 404);
+        }
     }
 }

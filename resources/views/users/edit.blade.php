@@ -129,17 +129,23 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <strong>Jabatan:</strong>
-                                        <input type="text" name="jabatan" placeholder="Jabatan" class="form-control"
-                                            value="{{ $user->jabatan }}">
+                                    <select class="form-control" name="jabatan">
+                                        <option value="">Pilih Jabatan</option>
+                                        @foreach ($jabatan as $j)
+                                            <option value="{{ $j->id }}" {{ $user->jabatan == $j->id ? 'selected' : '' }}>
+                                                {{ $j->Jabatan }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                                {{-- <div class="col-md-6">
                                     <div class="form-group">
                                         <strong>Bagian / Departemen:</strong>
                                         <input type="text" name="departemen" placeholder="Bagian / Departemen"
                                             class="form-control" value="{{ $user->departemen }}">
                                     </div>
-                                </div>
+                                </div> --}}
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <strong>Status Karyawan:</strong>

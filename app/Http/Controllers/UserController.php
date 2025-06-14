@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AturPoin;
 use App\Models\Avatar;
 use App\Models\FotoProfil;
+use App\Models\Jabatan;
 use App\Models\Lencana;
 use App\Models\MasterPerusahaan;
 use App\Models\MasterStatusPegawai;
@@ -31,7 +32,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = User::latest()->get();
+            $data = User::with('getJabatan')->latest()->get();
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
@@ -65,7 +66,8 @@ class UserController extends Controller
         $status = MasterStatusPegawai::all();
         $shift = ShiftKerja::all();
         $perusahaan = MasterPerusahaan::orderBy('Nama', 'ASC')->get();
-        return view('users.create', compact('roles', 'status', 'shift', 'perusahaan'));
+        $jabatan = Jabatan::get();
+        return view('users.create', compact('roles', 'status', 'shift', 'perusahaan', 'jabatan'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -86,8 +88,8 @@ class UserController extends Controller
         $status = MasterStatusPegawai::all();
         $shift = ShiftKerja::all();
         $perusahaan = MasterPerusahaan::orderBy('Nama', 'ASC')->get();
-
-        return view('users.edit', compact('roles', 'status', 'shift', 'perusahaan', 'user'));
+        $jabatan = Jabatan::get();
+        return view('users.edit', compact('roles', 'status', 'shift', 'perusahaan', 'user', 'jabatan'));
     }
 
     public function UpdateProfile($id): View
