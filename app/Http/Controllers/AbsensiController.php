@@ -404,162 +404,163 @@ class AbsensiController extends Controller
     /**
      * Menyimpan absensi baru.
      */
-    // public function store(Request $request)
-    // {
-    //     dd($request->all());
-    //     $UserData = User::with('getShift')->where('id', auth()->user()->id)->first();
-    //     $waktu_absen = '';
-    //     $shift = ShiftKerja::find($request->shift_id);
-    //     if ($request->jenis_absen == 'Masuk') {
-    //         $waktu_absen = $shift->jam_masuk->format('H:i:s');
-    //     } elseif ($request->jenis_absen == 'Keluar') {
-    //         $waktu_absen = $shift->jam_keluar->format('H:i:s');
-    //     }
-    //     if ($request->hasFile('file_pendukung')) {
-    //         $file = $request->file('file_pendukung');
-    //         $filename = time() . '.' . $file->getClientOriginalExtension();
-    //         $file->move(public_path('uploads/absensi'), $filename);
-    //         $data['file_pendukung'] = $filename;
-    //     }
-    //     if (now()->format('H:i:s') < $waktu_absen) {
-    //         $ontime = 'Y';
-    //     } else {
-    //         $ontime = 'N';
-    //     }
-    //     $image = explode('base64,', $request->selfie_photo);
-    //     $image = end($image);
-    //     $image = str_replace(' ', '+', $image);
-    //     $file = "A" . uniqid() . '.png';
-    //     Storage::disk('public/foto_absen')->put($file, base64_decode($image));
-    //     $data['shift_id'] = $request->shift_id;
-    //     $data['tanggal'] = now()->format('Y-m-d');
-    //     $data['waktu_absen'] = now()->format('H:i:s');
-    //     $data['jenis_absen'] = $request->tipe_absen;
-    //     $data['ontime'] = $ontime;
-    //     $data['keterangan'] = $request->keterangan ?? null;
-    //     $data['selfie_photo'] = $request->selfie_photo;
-    //     $data['foto_karyawan'] = $file;
-    //     $data['ip_address'] = $request->ip();
-    //     $data['lokasi'] = $request->lokasi ?? null;
-    //     $data['latitude'] = $request->latitude ?? null;
-    //     $data['longitude'] = $request->longitude ?? null;
-    //     $data['user_id'] = auth()->user()->id;
-    //     Absensi::create($data);
-    //     return view('absensi.sukses');
-    // }
     public function store(Request $request)
     {
-        $user = Auth::user();
-        $today = Carbon::today();
-        $now = Carbon::now();
-
-        // Check existing attendance for today
-        $todayAttendances = Absensi::where('user_id', $user->id)
-            ->whereDate('tanggal', $today)
-            ->get();
-
-        if ($request->type === 'Masuk') {
-            // Check if already checked in today
-            $hasCheckin = $todayAttendances->where('jenis_absen', 'Masuk')->first();
-            if ($hasCheckin) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Anda sudah melakukan check-in hari ini.'
-                ], 400);
-            }
-
-            // Get shift info
-            $shift = ShiftKerja::find($request->shift_id);
-            if (!$shift) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Shift tidak ditemukan.'
-                ], 404);
-            }
-
-            // Check if within allowed time (example: 30 minutes before shift start)
-            $shiftStart = Carbon::createFromFormat('H:i:s', $shift->jam_masuk);
-            $allowedCheckinTime = $shiftStart->subMinutes(30);
-
-            // Determine if on time or late
-            $shiftStartOriginal = Carbon::createFromFormat('H:i:s', $shift->jam_masuk);
-            $ontime = $now->format('H:i:s') <= $shiftStartOriginal->format('H:i:s') ? 'Y' : 'N';
-        } else {  // checkout
-            // Check if has checked in today
-            $hasCheckin = $todayAttendances->where('jenis_absen', 'Masuk')->first();
-            if (!$hasCheckin) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Anda belum melakukan check-in hari ini.'
-                ], 400);
-            }
-
-            // Check if already checked out
-            $hasCheckout = $todayAttendances->where('jenis_absen', 'Keluar')->first();
-            if ($hasCheckout) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Anda sudah melakukan check-out hari ini.'
-                ], 400);
-            }
-
-            $ontime = 'Y';  // Checkout is always considered on time
+        // dd($request->all());
+        $UserData = User::with('getShift')->where('id', auth()->user()->id)->first();
+        $waktu_absen = '';
+        $shift = ShiftKerja::find($request->shift_id);
+        if ($request->jenis_absen == 'Masuk') {
+            $waktu_absen = $shift->jam_masuk->format('H:i:s');
+        } elseif ($request->jenis_absen == 'Keluar') {
+            $waktu_absen = $shift->jam_keluar->format('H:i:s');
         }
-
-        // Handle photo upload
-        $photoPath = null;
-        if ($request->hasFile('photo')) {
-            $photo = $request->file('photo');
-            $fileName = 'absen_' . $user->id . '_' . $request->type . '_' . $now->format('Y-m-d_H-i-s') . '.' . $photo->getClientOriginalExtension();
-            $photoPath = $photo->storeAs('attendance_photos', $fileName, 'public');
+        if ($request->hasFile('file_pendukung')) {
+            $file = $request->file('file_pendukung');
+            $filename = time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/absensi'), $filename);
+            $data['file_pendukung'] = $filename;
         }
-
-        // Get IP Address
-        $ipAddress = $request->ip();
-
-        // Create new attendance record
-        $attendance = Absensi::create([
-            'user_id' => $user->id,
-            'shift_id' => $request->shift_id ?? null,
-            'tanggal' => $today,
-            'waktu_absen' => $now,
-            'jenis_absen' => $request->type,
-            'ontime' => $ontime,
-            'kehadiran' => 'H',
-            'keterangan' => null,
-            'file_pendukung' => null,
-            'selfie_photo' => $photoPath,
-            'foto_karyawan' => $photoPath,
-            'lokasi' => $request->location_name,
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
-            'ip_address' => $ipAddress,
-        ]);
-
-        // Prepare response message
-        $timeString = $now->format('H:i:s');
-        $statusText = $ontime ? 'tepat waktu' : 'terlambat';
-
-        if ($request->type === 'Masuk') {
-            $message = "Check-in berhasil dicatat pada {$timeString} ({$statusText})";
+        if (now()->format('H:i:s') < $waktu_absen) {
+            $ontime = 'Y';
         } else {
-            $message = "Check-out berhasil dicatat pada {$timeString}";
+            $ontime = 'N';
         }
-
-        return response()->json([
-            'success' => true,
-            'message' => $message,
-            'data' => [
-                'id' => $attendance->id,
-                'type' => $request->type,
-                'time' => $timeString,
-                'date' => $today->format('Y-m-d'),
-                'location' => $request->location_name,
-                'ontime' => $ontime,
-                'status' => $statusText
-            ]
-        ]);
+        $image = explode('base64,', $request->selfie_photo);
+        $image = end($image);
+        $image = str_replace(' ', '+', $image);
+        $file = "A" . uniqid() . '.png';
+        Storage::disk('public')->put('foto_absen/' . $file, base64_decode($image));
+        $data['shift_id'] = $request->shift_id;
+        $data['tanggal'] = now()->format('Y-m-d');
+        $data['waktu_absen'] = now()->format('H:i:s');
+        $data['jenis_absen'] = $request->tipe_absen;
+        $data['ontime'] = $ontime;
+        $data['kehadiran'] = 'H';
+        $data['keterangan'] = $request->keterangan ?? null;
+        $data['selfie_photo'] = $request->selfie_photo;
+        $data['foto_karyawan'] = $file;
+        $data['ip_address'] = $request->ip();
+        $data['lokasi'] = $request->lokasi ?? null;
+        $data['latitude'] = $request->latitude ?? null;
+        $data['longitude'] = $request->longitude ?? null;
+        $data['user_id'] = auth()->user()->id;
+        Absensi::create($data);
+        return view('absensi.sukses');
     }
+    // public function store(Request $request)
+    // {
+    //     $user = Auth::user();
+    //     $today = Carbon::today();
+    //     $now = Carbon::now();
+
+    //     // Check existing attendance for today
+    //     $todayAttendances = Absensi::where('user_id', $user->id)
+    //         ->whereDate('tanggal', $today)
+    //         ->get();
+
+    //     if ($request->type === 'Masuk') {
+    //         // Check if already checked in today
+    //         $hasCheckin = $todayAttendances->where('jenis_absen', 'Masuk')->first();
+    //         if ($hasCheckin) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Anda sudah melakukan check-in hari ini.'
+    //             ], 400);
+    //         }
+
+    //         // Get shift info
+    //         $shift = ShiftKerja::find($request->shift_id);
+    //         if (!$shift) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Shift tidak ditemukan.'
+    //             ], 404);
+    //         }
+
+    //         // Check if within allowed time (example: 30 minutes before shift start)
+    //         $shiftStart = Carbon::createFromFormat('H:i:s', $shift->jam_masuk);
+    //         $allowedCheckinTime = $shiftStart->subMinutes(30);
+
+    //         // Determine if on time or late
+    //         $shiftStartOriginal = Carbon::createFromFormat('H:i:s', $shift->jam_masuk);
+    //         $ontime = $now->format('H:i:s') <= $shiftStartOriginal->format('H:i:s') ? 'Y' : 'N';
+    //     } else {  // checkout
+    //         // Check if has checked in today
+    //         $hasCheckin = $todayAttendances->where('jenis_absen', 'Masuk')->first();
+    //         if (!$hasCheckin) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Anda belum melakukan check-in hari ini.'
+    //             ], 400);
+    //         }
+
+    //         // Check if already checked out
+    //         $hasCheckout = $todayAttendances->where('jenis_absen', 'Keluar')->first();
+    //         if ($hasCheckout) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Anda sudah melakukan check-out hari ini.'
+    //             ], 400);
+    //         }
+
+    //         $ontime = 'Y';  // Checkout is always considered on time
+    //     }
+
+    //     // Handle photo upload
+    //     $photoPath = null;
+    //     if ($request->hasFile('photo')) {
+    //         $photo = $request->file('photo');
+    //         $fileName = 'absen_' . $user->id . '_' . $request->type . '_' . $now->format('Y-m-d_H-i-s') . '.' . $photo->getClientOriginalExtension();
+    //         $photoPath = $photo->storeAs('attendance_photos', $fileName, 'public');
+    //     }
+
+    //     // Get IP Address
+    //     $ipAddress = $request->ip();
+
+    //     // Create new attendance record
+    //     $attendance = Absensi::create([
+    //         'user_id' => $user->id,
+    //         'shift_id' => $request->shift_id ?? null,
+    //         'tanggal' => $today,
+    //         'waktu_absen' => $now,
+    //         'jenis_absen' => $request->type,
+    //         'ontime' => $ontime,
+    //         'kehadiran' => 'H',
+    //         'keterangan' => null,
+    //         'file_pendukung' => null,
+    //         'selfie_photo' => $photoPath,
+    //         'foto_karyawan' => $photoPath,
+    //         'lokasi' => $request->location_name,
+    //         'latitude' => $request->latitude,
+    //         'longitude' => $request->longitude,
+    //         'ip_address' => $ipAddress,
+    //     ]);
+
+    //     // Prepare response message
+    //     $timeString = $now->format('H:i:s');
+    //     $statusText = $ontime ? 'tepat waktu' : 'terlambat';
+
+    //     if ($request->type === 'Masuk') {
+    //         $message = "Check-in berhasil dicatat pada {$timeString} ({$statusText})";
+    //     } else {
+    //         $message = "Check-out berhasil dicatat pada {$timeString}";
+    //     }
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => $message,
+    //         'data' => [
+    //             'id' => $attendance->id,
+    //             'type' => $request->type,
+    //             'time' => $timeString,
+    //             'date' => $today->format('Y-m-d'),
+    //             'location' => $request->location_name,
+    //             'ontime' => $ontime,
+    //             'status' => $statusText
+    //         ]
+    //     ]);
+    // }
 
     /** Menyimpan absensi cuti. */
 

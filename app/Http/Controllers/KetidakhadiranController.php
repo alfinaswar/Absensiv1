@@ -15,7 +15,7 @@ class KetidakhadiranController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Ketidakhadiran::latest()->get();
+            $data = Ketidakhadiran::with('getUser')->where('idUser', auth()->user()->id)->latest()->get();
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
@@ -77,24 +77,42 @@ class KetidakhadiranController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Ketidakhadiran $ketidakhadiran)
+    public function edit($id)
     {
-        //
+        $jenis = JenisCuti::get();
+        $data = Ketidakhadiran::find($id);
+        return view('ketidakhadiran.edit', compact('data', 'jenis'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Ketidakhadiran $ketidakhadiran)
+    public function update(Request $request, $id)
     {
-        //
+        $data = $request->all();
+        if ($request->hasFile('Dokumen')) {
+            $file = $request->file('Dokumen');
+            $filePath = $file->storeAs('Dokumen', time() . '_' . $file->getClientOriginalName(), 'public');
+            $data['Dokumen'] = $filePath;
+        }
+        $cuti = Ketidakhadiran::find($id);
+        $cuti->update($data);
+
+        return redirect()->route('ketidakhadiran.index')->with('success', 'Data ketidakhadiran berhasil diperbarui');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Ketidakhadiran $ketidakhadiran)
+    public function destroy($id)
     {
-        //
+        // dd($id);
+        $Cuti = Ketidakhadiran::find($id);
+        if ($Cuti) {
+            $Cuti->delete();
+            return response()->json(['message' => 'Data berhasil dihapus'], 200);
+        } else {
+            return response()->json(['message' => 'Data tidak ditemukan'], 404);
+        }
     }
 }

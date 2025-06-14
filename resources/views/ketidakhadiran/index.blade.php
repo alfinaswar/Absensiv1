@@ -107,8 +107,8 @@
                         name: 'preview_dokumen',
                     },
                     {
-                        data: 'idUser',
-                        name: 'idUser'
+                        data: 'get_user.name',
+                        name: 'get_user.name'
                     },
                     {
                         data: 'action',
